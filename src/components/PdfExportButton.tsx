@@ -4,7 +4,10 @@ import { computeSummary } from '../store/selectors';
 
 export function PdfExportButton() {
   const [loading, setLoading] = useState(false);
-  const state = useAppStore((s) => ({ party: s.party, groups: s.groups, participants: s.participants }));
+  const party = useAppStore((s) => s.party);
+  const groups = useAppStore((s) => s.groups);
+  const participants = useAppStore((s) => s.participants);
+  const state = { party, groups, participants };
 
   const handleExport = async () => {
     if (loading) return;
