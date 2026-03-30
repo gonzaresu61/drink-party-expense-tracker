@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import type { Participant } from '../types';
 
@@ -32,13 +32,11 @@ export function ParticipantRow({ participant }: Props) {
     }
   };
 
-  // Sync if amount changes externally (e.g. batch set)
-  const storeAmount = participant.amount;
-  const storeAmountStr = storeAmount !== null ? String(storeAmount) : '';
-  // Only sync if the input is not currently focused
-  if (amountInput !== storeAmountStr && document.activeElement?.getAttribute('data-id') !== participant.id) {
+  // 一括設定など外部からamountが変わったらinputに反映
+  useEffect(() => {
+    const storeAmountStr = participant.amount !== null ? String(participant.amount) : '';
     setAmountInput(storeAmountStr);
-  }
+  }, [participant.amount]);
 
   return (
     <div
