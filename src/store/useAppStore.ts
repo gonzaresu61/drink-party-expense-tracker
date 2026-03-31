@@ -5,6 +5,7 @@ const defaultParty = {
   title: '',
   date: new Date().toISOString().split('T')[0] ?? '',
   totalPayment: null,
+  headcount: null,
   memo: '',
 };
 
@@ -33,6 +34,7 @@ function loadInitialState(): AppState {
 interface AppStore extends AppState {
   setPartyTitle: (title: string) => void;
   setTotalPayment: (amount: number | null) => void;
+  setHeadcount: (headcount: number | null) => void;
   setPartyMemo: (memo: string) => void;
   addGroup: (name: string, color: GroupColor) => void;
   updateGroup: (id: GroupId, patch: Partial<Group>) => void;
@@ -53,6 +55,9 @@ export const useAppStore = create<AppStore>()((set, get) => ({
 
   setTotalPayment: (totalPayment) =>
     set((s) => ({ party: { ...s.party, totalPayment } })),
+
+  setHeadcount: (headcount) =>
+    set((s) => ({ party: { ...s.party, headcount } })),
 
   setPartyMemo: (memo) =>
     set((s) => ({ party: { ...s.party, memo } })),
