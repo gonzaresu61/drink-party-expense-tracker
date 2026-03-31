@@ -7,6 +7,7 @@ const defaultParty = {
   totalPayment: null,
   headcount: null,
   memo: '',
+  notes: '',
 };
 
 const defaultState: AppState = {
@@ -36,6 +37,7 @@ interface AppStore extends AppState {
   setTotalPayment: (amount: number | null) => void;
   setHeadcount: (headcount: number | null) => void;
   setPartyMemo: (memo: string) => void;
+  setNotes: (notes: string) => void;
   addGroup: (name: string, color: GroupColor) => void;
   updateGroup: (id: GroupId, patch: Partial<Group>) => void;
   deleteGroup: (id: GroupId) => void;
@@ -62,6 +64,9 @@ export const useAppStore = create<AppStore>()((set, get) => ({
 
   setPartyMemo: (memo) =>
     set((s) => ({ party: { ...s.party, memo } })),
+
+  setNotes: (notes) =>
+    set((s) => ({ party: { ...s.party, notes } })),
 
   addGroup: (name, color) =>
     set((s) => ({
