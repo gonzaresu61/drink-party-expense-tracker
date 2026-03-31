@@ -22,6 +22,7 @@ export interface PartyConfig {
   title: string;
   date: string; // ISO date string
   totalPayment: number | null;
+  headcount: number | null; // 割り勘計算用人数（参加者リストとは独立）
   memo: string;
 }
 

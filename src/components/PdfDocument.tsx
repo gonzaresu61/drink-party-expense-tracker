@@ -4,19 +4,38 @@ import {
   Text,
   View,
   StyleSheet,
+  Font,
 } from '@react-pdf/renderer';
 import type { AppState, Summary } from '../types';
+
+// NotoSansJP を登録（日本語対応）
+Font.register({
+  family: 'NotoSansJP',
+  fonts: [
+    {
+      src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5/files/noto-sans-jp-japanese-400-normal.woff2',
+      fontWeight: 400,
+    },
+    {
+      src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5/files/noto-sans-jp-japanese-700-normal.woff2',
+      fontWeight: 700,
+    },
+  ],
+});
+
+// ハイフネーション無効化（日本語テキストが途中で切れるのを防ぐ）
+Font.registerHyphenationCallback((word) => [word]);
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: 'Helvetica',
+    fontFamily: 'NotoSansJP',
     fontSize: 10,
     color: '#1f2937',
   },
   title: {
     fontSize: 18,
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
     marginBottom: 4,
   },
   subtitle: {
@@ -26,7 +45,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
     marginBottom: 8,
     marginTop: 16,
     color: '#374151',
@@ -47,7 +66,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   summaryValue: {
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
   },
   balanceBox: {
     border: '1pt solid #fca5a5',
@@ -64,7 +83,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0fdf4',
   },
   balanceLabel: {
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
     fontSize: 12,
     color: '#dc2626',
   },
@@ -72,7 +91,7 @@ const styles = StyleSheet.create({
     color: '#16a34a',
   },
   balanceValue: {
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
     fontSize: 14,
     color: '#dc2626',
   },
@@ -88,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   groupHeaderText: {
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
     fontSize: 10,
     color: '#3730a3',
   },
@@ -113,7 +132,7 @@ const styles = StyleSheet.create({
   participantAmount: {
     width: 70,
     textAlign: 'right',
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
     fontSize: 10,
   },
   footer: {
@@ -133,7 +152,7 @@ const styles = StyleSheet.create({
 });
 
 const fmtJpy = (amount: number) =>
-  '¥' + new Intl.NumberFormat('ja-JP').format(amount);
+  '\u00a5' + new Intl.NumberFormat('ja-JP').format(amount);
 
 interface Props {
   state: AppState;
@@ -150,37 +169,37 @@ export function PdfDocument({ state, summary }: Props) {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <Text style={styles.title}>
-          {party.title || '飲み会精算表'}
+          {party.title || '\u98f2\u307f\u4f1a\u7cbe\u7b97\u8868'}
         </Text>
         <Text style={styles.subtitle}>
           {party.date}
-          {party.memo ? `　${party.memo}` : ''}
+          {party.memo ? `\u3000${party.memo}` : ''}
         </Text>
 
         {/* Summary */}
-        <Text style={styles.sectionTitle}>精算サマリー</Text>
+        <Text style={styles.sectionTitle}>\u7cbe\u7b97\u30b5\u30de\u30ea\u30fc</Text>
         <View style={styles.summaryBox}>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>支払合計</Text>
+            <Text style={styles.summaryLabel}>\u652f\u6255\u5408\u8a08</Text>
             <Text style={styles.summaryValue}>{fmtJpy(summary.totalPayment)}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>徴収合計</Text>
+            <Text style={styles.summaryLabel}>\u5fb4\u53ce\u5408\u8a08</Text>
             <Text style={styles.summaryValue}>{fmtJpy(summary.totalCollected)}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>参加者数</Text>
-            <Text style={styles.summaryValue}>{summary.totalCount}名</Text>
+            <Text style={styles.summaryLabel}>\u53c2\u52a0\u8005\u6570</Text>
+            <Text style={styles.summaryValue}>{summary.totalCount}\u540d</Text>
           </View>
           <View style={{ ...styles.summaryRow, marginBottom: 0 }}>
-            <Text style={styles.summaryLabel}>徴収済</Text>
-            <Text style={styles.summaryValue}>{summary.paidCount}/{summary.totalCount}名</Text>
+            <Text style={styles.summaryLabel}>\u5fb4\u53ce\u6e08</Text>
+            <Text style={styles.summaryValue}>{summary.paidCount}/{summary.totalCount}\u540d</Text>
           </View>
         </View>
 
         <View style={[styles.balanceBox, !isShortfall && summary.balance !== 0 ? styles.balanceBoxSurplus : {}]}>
           <Text style={[styles.balanceLabel, !isShortfall && summary.balance !== 0 ? styles.balanceLabelSurplus : {}]}>
-            {isShortfall ? '不足' : summary.balance === 0 ? 'ちょうど！' : '余剰'}
+            {isShortfall ? '\u4e0d\u8db3' : summary.balance === 0 ? '\u3061\u3087\u3046\u3069\uff01' : '\u4f59\u5270'}
           </Text>
           <Text style={[styles.balanceValue, !isShortfall && summary.balance !== 0 ? styles.balanceValueSurplus : {}]}>
             {isShortfall ? '-' : summary.balance !== 0 ? '+' : ''}
@@ -189,22 +208,22 @@ export function PdfDocument({ state, summary }: Props) {
         </View>
 
         {/* Participant details */}
-        <Text style={styles.sectionTitle}>参加者明細</Text>
+        <Text style={styles.sectionTitle}>\u53c2\u52a0\u8005\u660e\u7d30</Text>
         {summary.groupSummaries.map((gs, i) => (
           <View key={gs.group?.id ?? `ungrouped-${i}`}>
             <View style={styles.groupHeader}>
               <Text style={styles.groupHeaderText}>
-                {gs.group ? gs.group.name : 'グループなし'}
-                {'　'}({gs.memberCount}名)
+                {gs.group ? gs.group.name : '\u30b0\u30eb\u30fc\u30d7\u306a\u3057'}
+                {'\u3000'}({gs.memberCount}\u540d)
               </Text>
-              <Text style={styles.groupHeaderText}>小計: {fmtJpy(gs.subtotal)}</Text>
+              <Text style={styles.groupHeaderText}>\u5c0f\u8a08: {fmtJpy(gs.subtotal)}</Text>
             </View>
             {gs.participants.map((p) => (
               <View key={p.id} style={styles.participantRow}>
                 <Text style={styles.participantName}>{p.name}</Text>
-                <Text style={styles.participantPaid}>{p.isPaid ? '受取済' : ''}</Text>
+                <Text style={styles.participantPaid}>{p.isPaid ? '\u53d7\u53d6\u6e08' : ''}</Text>
                 <Text style={styles.participantAmount}>
-                  {p.amount !== null ? fmtJpy(p.amount) : '未入力'}
+                  {p.amount !== null ? fmtJpy(p.amount) : '\u672a\u5165\u529b'}
                 </Text>
               </View>
             ))}
@@ -213,8 +232,8 @@ export function PdfDocument({ state, summary }: Props) {
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>飲み会会計アプリ</Text>
-          <Text style={styles.footerText}>作成: {now}</Text>
+          <Text style={styles.footerText}>\u98f2\u307f\u4f1a\u4f1a\u8a08\u30a2\u30d7\u30ea</Text>
+          <Text style={styles.footerText}>\u4f5c\u6210: {now}</Text>
         </View>
       </Page>
     </Document>
