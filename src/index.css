@@ -9,6 +9,11 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* iOSでinputタップ時の自動ズームを防止 (font-size < 16px がトリガー) */
+input, select, textarea {
+  font-size: 16px;
+}
+
 /* Safe area for iOS notch/home bar */
 .safe-bottom {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));

@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 
+const withCommas = (raw: string) =>
+  raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+
 export function PartyInfoForm() {
-  const { party, setPartyTitle, setTotalPayment, setHeadcount, setPartyMemo } = useAppStore();
+  const { party, setPartyTitle, setTotalPayment, setHeadcount, setPartyMemo, syncParticipantsByHeadcount } = useAppStore();
   const [amountInput, setAmountInput] = useState(
     party.totalPayment !== null ? String(party.totalPayment) : '',
   );
@@ -24,7 +27,9 @@ export function PartyInfoForm() {
     if (val === '' || val === '0') {
       setHeadcount(null);
     } else {
-      setHeadcount(Number(val));
+      const n = Number(val);
+      setHeadcount(n);
+      syncParticipantsByHeadcount(n);
     }
   };
 
@@ -44,7 +49,7 @@ export function PartyInfoForm() {
           value={party.title}
           onChange={(e) => setPartyTitle(e.target.value)}
           placeholder="例: 2026年度 歓迎会"
-          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
+          className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
         />
       </div>
 
@@ -55,11 +60,11 @@ export function PartyInfoForm() {
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            value={amountInput}
+            value={withCommas(amountInput)}
             onChange={(e) => setAmountInput(e.target.value.replace(/[^\d]/g, ''))}
             onBlur={handleAmountBlur}
             placeholder="0"
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-base text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
           />
           <span className="text-gray-600 font-medium">円</span>
         </div>
@@ -76,7 +81,7 @@ export function PartyInfoForm() {
             onChange={(e) => setHeadcountInput(e.target.value.replace(/[^\d]/g, ''))}
             onBlur={handleHeadcountBlur}
             placeholder="0"
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-base text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
           />
           <span className="text-gray-600 font-medium">名</span>
         </div>
@@ -97,7 +102,7 @@ export function PartyInfoForm() {
           value={party.memo}
           onChange={(e) => setPartyMemo(e.target.value)}
           placeholder="例: お店名、場所など"
-          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
+          className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
         />
       </div>
     </div>

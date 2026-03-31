@@ -12,12 +12,16 @@ const COLOR_CLASSES: Record<string, { badge: string; header: string }> = {
   pink: { badge: 'bg-pink-100 text-pink-700', header: 'text-pink-700' },
 };
 
+const withCommas = (raw: string) =>
+  raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+
 interface Props {
   group: Group;
 }
 
 export function GroupCard({ group }: Props) {
   const { setBatchAmount, deleteGroup } = useAppStore();
+  const party = useAppStore((s) => s.party);
   const summary = useSummary();
   const gs = summary.groupSummaries.find((s) => s.group?.id === group.id);
 
@@ -46,6 +50,15 @@ export function GroupCard({ group }: Props) {
     suggestedAmount !== average &&
     memberCount > 0;
 
+  // グループ固定→残りの人の1人あたり計算
+  const otherCount = summary.totalCount - memberCount;
+  const otherPerPerson =
+    group.defaultAmount !== null &&
+    party.totalPayment !== null &&
+    otherCount > 0
+      ? Math.ceil((party.totalPayment - group.defaultAmount * memberCount) / otherCount)
+      : null;
+
   return (
     <div className="border border-gray-100 rounded-xl p-3 space-y-2 bg-gray-50/50">
       <div className="flex items-center justify-between">
@@ -70,11 +83,11 @@ export function GroupCard({ group }: Props) {
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
-          value={batchInput}
+          value={withCommas(batchInput)}
           onChange={(e) => setBatchInput(e.target.value.replace(/[^\d]/g, ''))}
           onBlur={handleBatchBlur}
           placeholder="全員に設定"
-          className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+          className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
         />
         <span className="text-gray-500 text-xs">円</span>
       </div>
@@ -91,6 +104,13 @@ export function GroupCard({ group }: Props) {
           💡 全員 {formatCurrency(suggestedAmount!)} にすると{' '}
           <span className="font-semibold">{formatCurrency(suggestedAmount! * memberCount)}</span>{' '}
           集まります
+        </div>
+      )}
+
+      {otherPerPerson !== null && otherPerPerson > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 text-xs text-blue-700">
+          📊 このグループ以外 {otherCount}名: 1人あたり{' '}
+          <span className="font-semibold">{formatCurrency(otherPerPerson)}</span>
         </div>
       )}
     </div>

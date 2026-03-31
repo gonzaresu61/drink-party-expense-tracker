@@ -41,6 +41,7 @@ interface AppStore extends AppState {
   deleteGroup: (id: GroupId) => void;
   setBatchAmount: (groupId: GroupId, amount: number | null) => void;
   addParticipant: (name: string, groupId: GroupId | null) => void;
+  syncParticipantsByHeadcount: (n: number) => void;
   updateParticipant: (id: ParticipantId, patch: Partial<Participant>) => void;
   deleteParticipant: (id: ParticipantId) => void;
   togglePaid: (id: ParticipantId) => void;
@@ -107,6 +108,19 @@ export const useAppStore = create<AppStore>()((set, get) => ({
         },
       ],
     }));
+  },
+
+  syncParticipantsByHeadcount: (n) => {
+    const current = get().participants.length;
+    if (current >= n) return;
+    const toAdd = Array.from({ length: n - current }, () => ({
+      id: crypto.randomUUID(),
+      name: '',
+      groupId: null as GroupId | null,
+      amount: null,
+      isPaid: false,
+    }));
+    set((s) => ({ participants: [...s.participants, ...toAdd] }));
   },
 
   updateParticipant: (id, patch) =>

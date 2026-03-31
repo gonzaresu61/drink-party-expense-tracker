@@ -10,6 +10,9 @@ const COLOR_BADGE: Record<string, string> = {
   pink: 'bg-pink-100 text-pink-600',
 };
 
+const withCommas = (raw: string) =>
+  raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+
 interface Props {
   participant: Participant;
 }
@@ -59,10 +62,16 @@ export function ParticipantRow({ participant }: Props) {
         </svg>
       </button>
 
-      {/* Name */}
-      <span className={`flex-1 text-sm font-medium text-gray-800 truncate ${participant.isPaid ? 'line-through text-gray-400' : ''}`}>
-        {participant.name}
-      </span>
+      {/* Name (editable) */}
+      <input
+        type="text"
+        value={participant.name}
+        onChange={(e) => updateParticipant(participant.id, { name: e.target.value })}
+        placeholder="名前を入力"
+        className={`flex-1 font-medium bg-transparent border-0 border-b border-transparent focus:border-indigo-300 focus:outline-none placeholder:text-gray-300 min-w-0 ${
+          participant.isPaid ? 'line-through text-gray-400' : 'text-gray-800'
+        }`}
+      />
 
       {/* Group badge */}
       {group && (
@@ -78,11 +87,11 @@ export function ParticipantRow({ participant }: Props) {
           inputMode="numeric"
           pattern="[0-9]*"
           data-id={participant.id}
-          value={amountInput}
+          value={withCommas(amountInput)}
           onChange={(e) => setAmountInput(e.target.value.replace(/[^\d]/g, ''))}
           onBlur={handleAmountBlur}
           placeholder="未入力"
-          className={`w-24 border rounded-lg px-2 py-1.5 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 ${
+          className={`w-24 border rounded-lg px-2 py-1.5 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 ${
             participant.amount === null
               ? 'border-orange-200 bg-orange-50 text-orange-400 placeholder:text-orange-300'
               : 'border-gray-200 bg-gray-50 text-gray-800'
