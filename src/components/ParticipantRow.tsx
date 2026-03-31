@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import type { Participant } from '../types';
 
-const COLOR_BADGE: Record<string, string> = {
-  purple: 'bg-purple-100 text-purple-600',
-  blue: 'bg-blue-100 text-blue-600',
-  green: 'bg-green-100 text-green-600',
-  orange: 'bg-orange-100 text-orange-600',
-  pink: 'bg-pink-100 text-pink-600',
+const COLOR_DOT: Record<string, string> = {
+  purple: 'bg-purple-400',
+  blue: 'bg-blue-400',
+  green: 'bg-green-400',
+  orange: 'bg-orange-400',
+  pink: 'bg-pink-400',
 };
 
 const withCommas = (raw: string) =>
@@ -20,7 +20,6 @@ interface Props {
 export function ParticipantRow({ participant }: Props) {
   const { groups, togglePaid, updateParticipant, deleteParticipant } = useAppStore();
   const group = groups.find((g) => g.id === participant.groupId) ?? null;
-  const badgeClass = group ? (COLOR_BADGE[group.color] ?? COLOR_BADGE['blue']!) : '';
 
   const [amountInput, setAmountInput] = useState(
     participant.amount !== null ? String(participant.amount) : '',
@@ -43,7 +42,7 @@ export function ParticipantRow({ participant }: Props) {
 
   return (
     <div
-      className={`flex items-center gap-3 py-3 px-1 border-b border-gray-50 last:border-b-0 transition-opacity ${
+      className={`flex items-center gap-2 py-3 px-1 border-b border-gray-50 last:border-b-0 transition-opacity ${
         participant.isPaid ? 'opacity-60' : ''
       }`}
     >
@@ -62,23 +61,43 @@ export function ParticipantRow({ participant }: Props) {
         </svg>
       </button>
 
-      {/* Name (editable) */}
-      <input
-        type="text"
-        value={participant.name}
-        onChange={(e) => updateParticipant(participant.id, { name: e.target.value })}
-        placeholder="名前を入力"
-        className={`flex-1 font-medium bg-transparent border-0 border-b border-transparent focus:border-indigo-300 focus:outline-none placeholder:text-gray-300 min-w-0 ${
-          participant.isPaid ? 'line-through text-gray-400' : 'text-gray-800'
+      {/* Group color dot */}
+      <div
+        className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+          group ? (COLOR_DOT[group.color] ?? 'bg-blue-400') : 'bg-gray-200'
         }`}
       />
 
-      {/* Group badge */}
-      {group && (
-        <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${badgeClass}`}>
-          {group.name}
-        </span>
-      )}
+      {/* Name (editable) + group selector */}
+      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+        <input
+          type="text"
+          value={participant.name}
+          onChange={(e) => updateParticipant(participant.id, { name: e.target.value })}
+          placeholder="名前を入力"
+          className={`w-full font-medium bg-transparent border-0 border-b border-transparent focus:border-indigo-300 focus:outline-none placeholder:text-gray-300 min-w-0 ${
+            participant.isPaid ? 'line-through text-gray-400' : 'text-gray-800'
+          }`}
+        />
+        {groups.length > 0 && (
+          <select
+            value={participant.groupId ?? ''}
+            onChange={(e) =>
+              updateParticipant(participant.id, {
+                groupId: e.target.value || null,
+              })
+            }
+            className="w-full bg-transparent border-0 text-xs text-gray-400 focus:outline-none p-0 leading-tight"
+          >
+            <option value="">グループなし</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
 
       {/* Amount input */}
       <div className="flex items-center gap-1 shrink-0">

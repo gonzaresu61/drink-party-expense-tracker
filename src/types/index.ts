@@ -24,6 +24,7 @@ export interface PartyConfig {
   totalPayment: number | null;
   headcount: number | null; // 割り勘計算用人数（参加者リストとは独立）
   memo: string;
+  notes: string; // 備考欄（自由記述）
 }
 
 export interface AppState {

@@ -5,6 +5,7 @@ import { SummaryCard } from './components/SummaryCard';
 import { GroupSection } from './components/GroupSection';
 import { ParticipantList } from './components/ParticipantList';
 import { PdfExportButton } from './components/PdfExportButton';
+import { NotesSection } from './components/NotesSection';
 
 function App() {
   const { party, resetAll } = useAppStore();
@@ -44,6 +45,7 @@ function App() {
         <PartyInfoForm />
         <GroupSection />
         <ParticipantList />
+        <NotesSection />
       </main>
 
       {/* Sticky bottom bar */}
