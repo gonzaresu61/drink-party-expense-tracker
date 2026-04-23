@@ -1,53 +1,48 @@
-export type GroupId = string;
-export type ParticipantId = string;
+export type GroupColor =
+  | 'red' | 'orange' | 'amber' | 'green'
+  | 'teal' | 'blue' | 'purple' | 'pink';
 
-export type GroupColor = 'purple' | 'blue' | 'green' | 'orange' | 'pink';
+export type AmountMode = 'fixed' | 'auto';
 
-export interface Group {
-  id: GroupId;
-  name: string;
-  color: GroupColor;
-  defaultAmount: number | null;
+export interface EventConfig {
+  title: string;
+  date: string;
+  venue: string;
+  unitPrice: number | null;     // 1人あたり料金
+  attendeeCount: number | null; // 参加人数
+  manualTotal: number | null;   // 総額を直接入力する場合
+  notes: string;
 }
 
-export interface Participant {
-  id: ParticipantId;
+export interface Group {
+  id: string;
   name: string;
-  groupId: GroupId | null;
-  amount: number | null; // null = 未入力 (not entered, different from 0)
+  color: GroupColor;
+  count: number;               // 計算に使う人数
+  amountMode: AmountMode;      // 'fixed' = 固定, 'auto' = 自動計算
+  fixedAmount: number | null;  // modeが'fixed'のときの1人あたり金額
+}
+
+export interface Member {
+  id: string;
+  groupId: string;
+  name: string;
   isPaid: boolean;
 }
 
-export interface PartyConfig {
-  title: string;
-  date: string; // ISO date string
-  totalPayment: number | null;
-  headcount: number | null; // 割り勘計算用人数（参加者リストとは独立）
-  memo: string;
-  notes: string; // 備考欄（自由記述）
-}
-
 export interface AppState {
-  party: PartyConfig;
+  event: EventConfig;
   groups: Group[];
-  participants: Participant[];
+  members: Member[];
 }
 
-export interface GroupSummary {
-  group: Group | null;
-  participants: Participant[];
-  subtotal: number;
-  memberCount: number;
-  average: number | null;
-  suggestedAmount: number | null; // 100円切り上げ
-}
-
-export interface Summary {
-  totalCollected: number;
-  totalPayment: number;
-  balance: number; // positive = shortfall, negative = surplus
-  unentered: number; // participants with amount === null
+export interface CalcResult {
+  total: number;
+  fixedSum: number;
+  autoCount: number;
+  autoAmount: number | null; // null = 自動グループなし
+  perGroup: Record<string, number>; // groupId → 1人あたり金額
+  totalHeadcount: number;
+  collectedTotal: number;
   paidCount: number;
-  totalCount: number;
-  groupSummaries: GroupSummary[];
 }

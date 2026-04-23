@@ -1,20 +1,15 @@
 import { useState } from 'react';
-import { useAppStore } from './store/useAppStore';
-import { PartyInfoForm } from './components/PartyInfoForm';
-import { SummaryCard } from './components/SummaryCard';
-import { GroupSection } from './components/GroupSection';
-import { ParticipantList } from './components/ParticipantList';
-import { PdfExportButton } from './components/PdfExportButton';
+import { useEventStore } from './store/useEventStore';
+import { StatusCard } from './components/StatusCard';
+import { EventForm } from './components/EventForm';
+import { GroupCalculator } from './components/GroupCalculator';
+import { MemberSection } from './components/MemberSection';
 import { NotesSection } from './components/NotesSection';
+import { ShareFooter } from './components/ShareFooter';
 
 function App() {
-  const { party, resetAll } = useAppStore();
+  const { event, resetAll } = useEventStore();
   const [showReset, setShowReset] = useState(false);
-
-  const handleReset = () => {
-    resetAll();
-    setShowReset(false);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -25,8 +20,8 @@ function App() {
             <span className="text-xl">🍻</span>
             <div>
               <h1 className="text-base font-bold text-gray-800 leading-tight">飲み会会計アプリ</h1>
-              {party.title && (
-                <p className="text-xs text-gray-400 truncate max-w-[180px]">{party.title}</p>
+              {event.title && (
+                <p className="text-xs text-gray-400 truncate max-w-[200px]">{event.title}</p>
               )}
             </div>
           </div>
@@ -39,23 +34,18 @@ function App() {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="max-w-lg mx-auto px-4 pb-32 pt-4 space-y-4">
-        <SummaryCard />
-        <PartyInfoForm />
-        <GroupSection />
-        <ParticipantList />
+      {/* Main */}
+      <main className="max-w-lg mx-auto px-4 pt-4 pb-32 space-y-4">
+        <StatusCard />
+        <EventForm />
+        <GroupCalculator />
+        <MemberSection />
         <NotesSection />
       </main>
 
-      {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-10">
-        <div className="max-w-lg mx-auto px-4 py-3 safe-bottom">
-          <PdfExportButton />
-        </div>
-      </div>
+      <ShareFooter />
 
-      {/* Reset confirmation modal */}
+      {/* Reset modal */}
       {showReset && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"
@@ -67,7 +57,7 @@ function App() {
           >
             <h3 className="text-base font-bold text-gray-800 mb-2">データをリセットしますか？</h3>
             <p className="text-sm text-gray-500 mb-5">
-              すべての参加者・グループ・金額が削除されます。この操作は取り消せません。
+              すべてのグループ・メンバー・金額が削除されます。この操作は取り消せません。
             </p>
             <div className="flex gap-3">
               <button
@@ -77,7 +67,7 @@ function App() {
                 キャンセル
               </button>
               <button
-                onClick={handleReset}
+                onClick={() => { resetAll(); setShowReset(false); }}
                 className="flex-1 bg-red-500 text-white rounded-xl py-3 font-semibold"
               >
                 リセット
