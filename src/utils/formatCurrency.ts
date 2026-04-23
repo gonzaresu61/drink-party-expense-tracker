@@ -1,10 +1,10 @@
-const formatter = new Intl.NumberFormat('ja-JP', {
-  style: 'currency',
-  currency: 'JPY',
-});
+export const formatCurrency = (n: number): string =>
+  '¥' + n.toLocaleString('ja-JP');
 
-export const formatCurrency = (amount: number): string =>
-  formatter.format(amount);
+export const formatAmount = (n: number): string => {
+  if (Number.isInteger(n)) return '¥' + n.toLocaleString('ja-JP');
+  return '¥' + n.toFixed(2);
+};
 
-export const formatNumber = (amount: number): string =>
-  new Intl.NumberFormat('ja-JP').format(amount);
+export const withCommas = (raw: string): string =>
+  raw ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';

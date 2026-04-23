@@ -1,14 +1,6 @@
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  Font,
-} from '@react-pdf/renderer';
-import type { AppState, Summary } from '../types';
+import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import type { AppState, CalcResult } from '../types';
 
-// NotoSansJP を登録（日本語対応）
 Font.register({
   family: 'NotoSansJP',
   fonts: [
@@ -22,218 +14,127 @@ Font.register({
     },
   ],
 });
-
-// ハイフネーション無効化（日本語テキストが途中で切れるのを防ぐ）
 Font.registerHyphenationCallback((word) => [word]);
 
-const styles = StyleSheet.create({
-  page: {
-    padding: 40,
-    fontFamily: 'NotoSansJP',
-    fontSize: 10,
-    color: '#1f2937',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 700,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 10,
-    color: '#6b7280',
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: 700,
-    marginBottom: 8,
-    marginTop: 16,
-    color: '#374151',
-  },
-  summaryBox: {
-    border: '1pt solid #e5e7eb',
-    borderRadius: 6,
-    padding: 12,
-    backgroundColor: '#f9fafb',
-    marginBottom: 4,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  summaryLabel: {
-    color: '#6b7280',
-  },
-  summaryValue: {
-    fontWeight: 700,
-  },
-  balanceBox: {
-    border: '1pt solid #fca5a5',
-    borderRadius: 6,
-    padding: 12,
-    backgroundColor: '#fef2f2',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  balanceBoxSurplus: {
-    border: '1pt solid #6ee7b7',
-    backgroundColor: '#f0fdf4',
-  },
-  balanceLabel: {
-    fontWeight: 700,
-    fontSize: 12,
-    color: '#dc2626',
-  },
-  balanceLabelSurplus: {
-    color: '#16a34a',
-  },
-  balanceValue: {
-    fontWeight: 700,
-    fontSize: 14,
-    color: '#dc2626',
-  },
-  balanceValueSurplus: {
-    color: '#16a34a',
-  },
-  groupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#e0e7ff',
-    padding: '6 10',
-    borderRadius: 4,
-    marginBottom: 2,
-  },
-  groupHeaderText: {
-    fontWeight: 700,
-    fontSize: 10,
-    color: '#3730a3',
-  },
-  participantRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderBottom: '0.5pt solid #f3f4f6',
-  },
-  participantName: {
-    flex: 1,
-    fontSize: 10,
-  },
-  participantPaid: {
-    width: 40,
-    textAlign: 'center',
-    fontSize: 9,
-    color: '#16a34a',
-  },
-  participantAmount: {
-    width: 70,
-    textAlign: 'right',
-    fontWeight: 700,
-    fontSize: 10,
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 40,
-    right: 40,
-    borderTop: '0.5pt solid #e5e7eb',
-    paddingTop: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  footerText: {
-    fontSize: 8,
-    color: '#9ca3af',
-  },
+const s = StyleSheet.create({
+  page: { padding: 40, fontFamily: 'NotoSansJP', fontSize: 10, color: '#1f2937' },
+  title: { fontSize: 18, fontWeight: 700, marginBottom: 2 },
+  sub: { fontSize: 10, color: '#6b7280', marginBottom: 20 },
+  sectionTitle: { fontSize: 11, fontWeight: 700, marginBottom: 6, marginTop: 14, color: '#374151' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
+  label: { color: '#6b7280' },
+  val: { fontWeight: 700 },
+  box: { border: '1pt solid #e5e7eb', borderRadius: 4, padding: 10, backgroundColor: '#f9fafb', marginBottom: 8 },
+  resultBox: { backgroundColor: '#4f46e5', borderRadius: 4, padding: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  groupHeader: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#e0e7ff', padding: '5 8', borderRadius: 3, marginBottom: 1 },
+  groupHeaderText: { fontWeight: 700, fontSize: 10, color: '#3730a3' },
+  memberRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, paddingHorizontal: 8, borderBottom: '0.5pt solid #f3f4f6' },
+  footer: { position: 'absolute', bottom: 30, left: 40, right: 40, borderTop: '0.5pt solid #e5e7eb', paddingTop: 6, flexDirection: 'row', justifyContent: 'space-between' },
+  footerText: { fontSize: 8, color: '#9ca3af' },
 });
 
-const fmtJpy = (amount: number) =>
-  '\u00a5' + new Intl.NumberFormat('ja-JP').format(amount);
+const fmtAmt = (n: number) =>
+  Number.isInteger(n)
+    ? '¥' + n.toLocaleString('ja-JP')
+    : '¥' + n.toFixed(2);
 
-interface Props {
-  state: AppState;
-  summary: Summary;
-}
+interface Props { state: AppState; calc: CalcResult; }
 
-export function PdfDocument({ state, summary }: Props) {
-  const { party } = state;
-  const isShortfall = summary.balance > 0;
+export function PdfDocument({ state, calc }: Props) {
+  const { event, groups, members } = state;
   const now = new Date().toLocaleString('ja-JP');
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <Text style={styles.title}>
-          {party.title || '\u98f2\u307f\u4f1a\u7cbe\u7b97\u8868'}
-        </Text>
-        <Text style={styles.subtitle}>
-          {party.date}
-          {party.memo ? `\u3000${party.memo}` : ''}
+      <Page size="A4" style={s.page}>
+        <Text style={s.title}>{event.title || '飲み会精算表'}</Text>
+        <Text style={s.sub}>
+          {event.date}
+          {event.venue ? `　·　${event.venue}` : ''}
         </Text>
 
-        {/* Summary */}
-        <Text style={styles.sectionTitle}>\u7cbe\u7b97\u30b5\u30de\u30ea\u30fc</Text>
-        <View style={styles.summaryBox}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>\u652f\u6255\u5408\u8a08</Text>
-            <Text style={styles.summaryValue}>{fmtJpy(summary.totalPayment)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>\u5fb4\u53ce\u5408\u8a08</Text>
-            <Text style={styles.summaryValue}>{fmtJpy(summary.totalCollected)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>\u53c2\u52a0\u8005\u6570</Text>
-            <Text style={styles.summaryValue}>{summary.totalCount}\u540d</Text>
-          </View>
-          <View style={{ ...styles.summaryRow, marginBottom: 0 }}>
-            <Text style={styles.summaryLabel}>\u5fb4\u53ce\u6e08</Text>
-            <Text style={styles.summaryValue}>{summary.paidCount}/{summary.totalCount}\u540d</Text>
-          </View>
-        </View>
-
-        <View style={[styles.balanceBox, !isShortfall && summary.balance !== 0 ? styles.balanceBoxSurplus : {}]}>
-          <Text style={[styles.balanceLabel, !isShortfall && summary.balance !== 0 ? styles.balanceLabelSurplus : {}]}>
-            {isShortfall ? '\u4e0d\u8db3' : summary.balance === 0 ? '\u3061\u3087\u3046\u3069\uff01' : '\u4f59\u5270'}
-          </Text>
-          <Text style={[styles.balanceValue, !isShortfall && summary.balance !== 0 ? styles.balanceValueSurplus : {}]}>
-            {isShortfall ? '-' : summary.balance !== 0 ? '+' : ''}
-            {fmtJpy(Math.abs(summary.balance))}
-          </Text>
-        </View>
-
-        {/* Participant details */}
-        <Text style={styles.sectionTitle}>\u53c2\u52a0\u8005\u660e\u7d30</Text>
-        {summary.groupSummaries.map((gs, i) => (
-          <View key={gs.group?.id ?? `ungrouped-${i}`}>
-            <View style={styles.groupHeader}>
-              <Text style={styles.groupHeaderText}>
-                {gs.group ? gs.group.name : '\u30b0\u30eb\u30fc\u30d7\u306a\u3057'}
-                {'\u3000'}({gs.memberCount}\u540d)
-              </Text>
-              <Text style={styles.groupHeaderText}>\u5c0f\u8a08: {fmtJpy(gs.subtotal)}</Text>
-            </View>
-            {gs.participants.map((p) => (
-              <View key={p.id} style={styles.participantRow}>
-                <Text style={styles.participantName}>{p.name}</Text>
-                <Text style={styles.participantPaid}>{p.isPaid ? '\u53d7\u53d6\u6e08' : ''}</Text>
-                <Text style={styles.participantAmount}>
-                  {p.amount !== null ? fmtJpy(p.amount) : '\u672a\u5165\u529b'}
+        <Text style={s.sectionTitle}>負担金額</Text>
+        <View style={s.box}>
+          {groups.map((g) => {
+            const pp = calc.perGroup[g.id] ?? 0;
+            return (
+              <View key={g.id} style={s.row}>
+                <Text style={s.label}>
+                  {g.name || 'グループ'}（{g.count}名）
+                  {g.amountMode === 'auto' ? '　←自動計算' : ''}
                 </Text>
+                <Text style={s.val}>{fmtAmt(pp)} / 人</Text>
               </View>
-            ))}
-          </View>
-        ))}
+            );
+          })}
+        </View>
 
-        {/* Footer */}
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>\u98f2\u307f\u4f1a\u4f1a\u8a08\u30a2\u30d7\u30ea</Text>
-          <Text style={styles.footerText}>\u4f5c\u6210: {now}</Text>
+        {calc.autoAmount !== null && (
+          <View style={s.resultBox}>
+            <Text style={{ color: '#c7d2fe', fontSize: 10 }}>
+              自動計算グループ {calc.autoCount}名
+            </Text>
+            <Text style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>
+              {fmtAmt(calc.autoAmount)} / 人
+            </Text>
+          </View>
+        )}
+
+        <Text style={s.sectionTitle}>精算サマリー</Text>
+        <View style={s.box}>
+          <View style={s.row}>
+            <Text style={s.label}>総額</Text>
+            <Text style={s.val}>{fmtAmt(calc.total)}</Text>
+          </View>
+          <View style={s.row}>
+            <Text style={s.label}>合計人数</Text>
+            <Text style={s.val}>{calc.totalHeadcount}名</Text>
+          </View>
+          {event.unitPrice && event.attendeeCount && (
+            <View style={{ ...s.row, marginBottom: 0 }}>
+              <Text style={s.label}>1人当たり料金</Text>
+              <Text style={s.val}>{fmtAmt(event.unitPrice)} × {event.attendeeCount}名</Text>
+            </View>
+          )}
+        </View>
+
+        {members.length > 0 && (
+          <>
+            <Text style={s.sectionTitle}>征収明細</Text>
+            {groups.map((g) => {
+              const gMembers = members.filter((m) => m.groupId === g.id);
+              if (gMembers.length === 0) return null;
+              const pp = calc.perGroup[g.id] ?? 0;
+              return (
+                <View key={g.id}>
+                  <View style={s.groupHeader}>
+                    <Text style={s.groupHeaderText}>{g.name || 'グループ'}（{gMembers.length}名）</Text>
+                    <Text style={s.groupHeaderText}>{fmtAmt(pp)} / 人</Text>
+                  </View>
+                  {gMembers.map((m) => (
+                    <View key={m.id} style={s.memberRow}>
+                      <Text>{m.name || '名前未記入'}</Text>
+                      <Text style={{ color: m.isPaid ? '#16a34a' : '#9ca3af' }}>
+                        {m.isPaid ? '受取済' : '未征収'}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              );
+            })}
+          </>
+        )}
+
+        {event.notes ? (
+          <>
+            <Text style={s.sectionTitle}>備考</Text>
+            <Text style={{ fontSize: 10, color: '#374151', lineHeight: 1.5 }}>{event.notes}</Text>
+          </>
+        ) : null}
+
+        <View style={s.footer} fixed>
+          <Text style={s.footerText}>飲み会会計アプリ</Text>
+          <Text style={s.footerText}>作成: {now}</Text>
         </View>
       </Page>
     </Document>
