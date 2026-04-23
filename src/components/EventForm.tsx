@@ -13,6 +13,8 @@ export function EventForm() {
 
   const derivedTotal = computeTotal(event);
   const showDerived = event.unitPrice !== null && event.attendeeCount !== null && event.manualTotal === null;
+  const unitCountActive = event.unitPrice !== null || event.attendeeCount !== null;
+  const manualActive = event.manualTotal !== null;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
@@ -64,7 +66,8 @@ export function EventForm() {
                 setTotalInput('');
               }}
               placeholder="0"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
+              disabled={manualActive}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             />
             <span className="text-xs text-gray-400">円</span>
           </div>
@@ -82,7 +85,8 @@ export function EventForm() {
                 setTotalInput('');
               }}
               placeholder="0"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
+              disabled={manualActive}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             />
             <span className="text-xs text-gray-400">名</span>
           </div>
@@ -118,7 +122,8 @@ export function EventForm() {
               }
             }}
             placeholder="0"
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
+            disabled={unitCountActive}
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
           />
           <span className="text-gray-600 font-medium">円</span>
         </div>

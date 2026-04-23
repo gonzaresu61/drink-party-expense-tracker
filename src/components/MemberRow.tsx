@@ -5,13 +5,17 @@ import { formatAmount } from '../utils/formatCurrency';
 interface Props {
   member: Member;
   amount: number;
+  index: number;
 }
 
-export function MemberRow({ member, amount }: Props) {
+export function MemberRow({ member, amount, index }: Props) {
   const { updateMember, deleteMember, togglePaid } = useEventStore();
 
   return (
     <div className={`flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0 ${member.isPaid ? 'opacity-60' : ''}`}>
+      {/* 番号 */}
+      <span className="text-xs text-gray-400 w-5 text-center shrink-0 select-none">{index}</span>
+
       {/* 支払いトグル */}
       <button
         type="button"

@@ -46,8 +46,8 @@ function GroupMemberBlock({ group, perGroupAmount }: { group: Group; perGroupAmo
           {groupMembers.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-2">メンバー未登録</p>
           ) : (
-            groupMembers.map((m) => (
-              <MemberRow key={m.id} member={m} amount={perGroupAmount} />
+            groupMembers.map((m, idx) => (
+              <MemberRow key={m.id} member={m} amount={perGroupAmount} index={idx + 1} />
             ))
           )}
 
